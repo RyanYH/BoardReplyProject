@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.dao.board-mapper">
+  <!-- 
+     parameterType : 매개변수
+     resultType : 리턴형 
+     public ReplyBoardVO boardAllData(Map map)
+     map.put("start",1)
+     map.put("end",10)
+     #{start} => ?  map.get("start")
+     #{end} => ? map.get("end")
+   -->
+  <sql id="where-no">
+   WHERE no=#{no}
+  </sql>
+  <select id="boardAllData" parameterType="java.util.Map" resultType="Board">
+    SELECT no,subject,name,regdate,hit,num
+    FROM (SELECT no,subject,name,regdate,hit,rownum as num 
+    FROM (SELECT no,subject,name,regdate,hit 
+    FROM reply_board ORDER BY no DESC))
+    WHERE num BETWEEN #{start} AND #{end}
+  </select>
+  <select id="boardTotalPage" resultType="int">
+    SELECT CEIL(COUNT(*)/5) FROM reply_board
+  </select>
+  <update id="boardHitIncrement" parameterType="int">
+    UPDATE reply_board SET
+    hit=hit+1
+    <include refid="where-no"/>
+  </update>
+  <select id="boardContentData" resultType="Board" parameterType="int">
+    SELECT no,name,subject,content,regdate,hit
+    FROM reply_board
+    <include refid="where-no"/>
+  </select>
+  <select id="boardReplyCount" resultType="int" parameterType="int">
+    SELECT COUNT(depth) FROM reply
+    WHERE bno=#{bno}
+  </select>
+  <select id="replyAllData" resultType="Reply" parameterType="java.util.Map">
+    SELECT no,bno,id,name,dbday,msg,group_tab,num
+    FROM (SELECT no,bno,id,name,TO_CHAR(regdate,'YYYY-MM-DD HH24:MI:SS') as dbday,msg,group_tab,rownum as num 
+    FROM (SELECT no,bno,id,name,regdate,msg,group_tab 
+    FROM reply WHERE bno=#{bno} ORDER BY group_id DESC,group_step ASC ))
+    WHERE num BETWEEN #{start} AND #{end}
+  </select>
+  <!-- 댓글 달기 -->
+  <select id="replyParentData" resultType="Reply" parameterType="int">
+    SELECT group_id,group_step,group_tab 
+    FROM reply
+    WHERE no=#{no}
+  </select>
+  <update id="replyDataModify" parameterType="Reply">
+    UPDATE reply SET
+    group_step=group_step+1
+    WHERE group_id=#{group_id} AND group_step>#{group_step}
+  </update> 
+  <insert id="replyReInsert" parameterType="Reply">
+    <!-- sequence (한번만 사용이 가능) -->
+    <selectKey keyProperty="no" resultType="int" order="BEFORE">
+      SELECT NVL(MAX(no)+1,1) as no FROM reply
+    </selectKey>
+    INSERT INTO reply VALUES(#{no},#{bno},
+    #{id},#{name},#{msg},SYSDATE,
+    #{group_id},
+    #{group_step},#{group_tab},#{root},0)
+  </insert>
+  <!--                   no gi gs gt root depth
+        AAAAA            1  1  0  0   0    2
+          = DDDDD        4  1  1  1   1    0
+          = BBBBB        2  1  2  1   1    1
+          
+           = CCCCC       3  1  3  2   2    0
+          
+   -->
+  <update id="replyReDepthIncrement" parameterType="int">
+    UPDATE reply SET 
+    depth=depth+1
+    WHERE no=#{no}
+  </update>
+  <!-- 새 댓글 달기 -->
+  <insert id="replyInsert" parameterType="Reply">
+    <!-- sequence (한번만 사용이 가능) -->
+    <selectKey keyProperty="no" resultType="int" order="BEFORE">
+      SELECT NVL(MAX(no)+1,1) as no FROM reply
+    </selectKey>
+    INSERT INTO reply VALUES(#{no},#{bno},
+    #{id},#{name},#{msg},SYSDATE,
+    (SELECT NVL(max(group_id)+1,1) FROM reply),
+    0,0,0,0)
+  </insert>
+  <!-- 수정 -->
+  <update id="replyUpdate" parameterType="Reply">
+    UPDATE reply SET
+    msg=#{msg}
+    WHERE no=#{no}
+  </update>
+  <!-- 게시물 삭제 -->
+  <select id="boardGetPwd" resultType="String" parameterType="int">
+    SELECT pwd FROM reply_board
+    WHERE no=#{no}
+  </select>
+  <delete id="boardDelete" parameterType="int">
+   DELETE FROM reply_board
+   WHERE no=#{no}
+  </delete>
+  <delete id="boardReplyDelete" parameterType="int">
+   DELETE FROM reply
+   WHERE bno=#{bno}
+  </delete>
+  <!--  댓글 삭제  -->
+  <select id="replyInfoData" resultType="Reply" parameterType="int">
+   SELECT root,depth FROM reply
+   WHERE no=#{no}
+  </select>
+  <delete id="replyDelete" parameterType="int">
+   DELETE FROM reply
+   WHERE no=#{no}
+  </delete>
+  <update id="replyMsgUpdate" parameterType="int">
+   UPDATE reply SET
+   msg='&lt;font color=red&gt;관리자에 의해 삭제된 글입니다&lt;/font&gt;'
+   WHERE no=#{no}
+  </update>
+  <update id="replyDepthDecrement" parameterType="int">
+   UPDATE reply SET
+   depth=depth-1
+   WHERE no=#{no}
+  </update>
+</mapper>
+
+
+
+
+
+
+
+

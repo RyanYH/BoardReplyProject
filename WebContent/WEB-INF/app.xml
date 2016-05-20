@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans SYSTEM "app.dtd">
+<beans>
+  <bean class="com.model.ListModel" id="list"/>
+  <bean class="com.model.ContentModel" id="content"/>
+  <bean class="com.model.InsertModel" id="insert"/>
+  <bean class="com.model.ReplyInsertModel" id="reply_insert"/>
+  <bean class="com.model.ReplyUpdateModel" id="reply_update"/>
+  <bean class="com.model.ReplyReInsertModel" id="reply_re_insert"/>
+  <bean class="com.model.ReplyDeleteModel" id="reply_delete"/>
+  <bean class="com.model.DeleteModel" id="board_delete"/>
+</beans>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+     ML 
+      = ELEMENT (태그)
+          <beans>      bean+ : 한번이상 사용
+           <bean></bean>
+           <bean></bean>
+           <bean></bean>
+          </beans>
+          
+          <beans>      bean* : 한번이상 사용,사용이 안됌
+          </beans>
+          <beans>      bean* : 한번이상 사용
+           <bean></bean>
+           <bean></bean>
+           <bean></bean>
+          </beans>
+          
+          
+          <beans>   beans?
+          </beans>
+          <beans>
+            <bean><bean>
+          </beans>
+          
+          <table>   tr+
+            <tr>
+              <th></th>
+            </tr>
+            <tr>
+              <td></td>
+            </tr>
+          </table>
+          
+          tr (th|td)*
+          
+          <beans>
+            <bean></bean>  bean : 반드시 한번만 사용
+          </beans>
+          ================ 태그와 태그의 관계
+          <bean>aaa</bean>
+          bean #PCDATA
+          <bean/> 
+          bean EMPTY
+          
+      = ATTLIST (속성)
+          <!ATTLIST 태그명 옵션(제약조건) 제약조건>
+          <!ATTLIST bean ID #REQUIRED>
+            ID = UNIQUE
+            IDREF = FOREIGN KEY
+            CDATA = 문자열(공백 포함)
+            NOTATION = 문자열 (공백없음) (.)
+            
+            #REQUIRED NOT NULL
+            #IMPLIED NULL
+            #FIXED default
+            
+            <bean/>
+-->
+<!ELEMENT beans (bean+)>
+<!ELEMENT bean EMPTY>
+<!ATTLIST bean id ID #REQUIRED 
+               class CDATA #REQUIRED>
+
+
+
+
+
+
